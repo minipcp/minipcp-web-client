@@ -1,33 +1,41 @@
 import React from "react";
-import {render} from "react-dom";
-import particpantesFetch from "./participantes.js";
+import { render } from "react-dom";
 import MainMenu from "./widgets/MainMenu.jsx";
+import PageContainer from "./widgets/PageContainer.jsx";
+import dataStore from "./data-store/main.js";
+
+window.trace = (data) => {
+    console.log(data);
+
+    return data;
+};
+
+
+const MainPage = React.createClass({
+
+    render () {
+        const state = dataStore.getState();
+        return (
+            <PageContainer title="MiniPCP" subtitle="Web Edition" 
+                menu={ (<MainMenu onClick={ (button) => { state.menus.onClick(button, dataStore); } } options={ state.menus.options }/>) }
+                module={ (<App/>) } />
+        );
+    }
+
+});
+
 
 const App = React.createClass({
     render () {
-        particpantesFetch();
         return <p>Hello React!</p>;
     }
 });
 
 
-const menuItems = [
-    {
-        caption: "Cadastros",
-        options: [
-            { caption: "Clientes" },
-            { caption: "Fornecedores" },
-            { caption: "Transportadores" },
-            { caption: "Vendedores" },
-        ]
-    }, 
-    { caption: "Vendas"}, 
-    { caption: "Compras"}
-]
+const renderApp = () => {
+    render(<MainPage/>, document.getElementById("app"));
+};
 
-
-
-render(<MainMenu options={ menuItems }/>, document.getElementById("appMenu"));
-render(<App/>, document.getElementById("app"));
-
+dataStore.subscribe(renderApp);
+renderApp();
 

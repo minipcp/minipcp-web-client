@@ -55,20 +55,41 @@
 	
 	var _reactDom = __webpack_require__(/*! react-dom */ 158);
 	
-	var _participantes = __webpack_require__(/*! ./participantes.js */ 159);
-	
-	var _participantes2 = _interopRequireDefault(_participantes);
-	
 	var _MainMenu = __webpack_require__(/*! ./widgets/MainMenu.jsx */ 179);
 	
 	var _MainMenu2 = _interopRequireDefault(_MainMenu);
 	
+	var _PageContainer = __webpack_require__(/*! ./widgets/PageContainer.jsx */ 424);
+	
+	var _PageContainer2 = _interopRequireDefault(_PageContainer);
+	
+	var _main = __webpack_require__(/*! ./data-store/main.js */ 425);
+	
+	var _main2 = _interopRequireDefault(_main);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	window.trace = function (data) {
+	    console.log(data);
+	
+	    return data;
+	};
+	
+	var MainPage = _react2.default.createClass({
+	    displayName: "MainPage",
+	    render: function render() {
+	        var state = _main2.default.getState();
+	        return _react2.default.createElement(_PageContainer2.default, { title: "MiniPCP", subtitle: "Web Edition",
+	            menu: _react2.default.createElement(_MainMenu2.default, { onClick: function onClick(button) {
+	                    state.menus.onClick(button, _main2.default);
+	                }, options: state.menus.options }),
+	            module: _react2.default.createElement(App, null) });
+	    }
+	});
 	
 	var App = _react2.default.createClass({
 	    displayName: "App",
 	    render: function render() {
-	        (0, _participantes2.default)();
 	        return _react2.default.createElement(
 	            "p",
 	            null,
@@ -77,13 +98,12 @@
 	    }
 	});
 	
-	var menuItems = [{
-	    caption: "Cadastros",
-	    options: [{ caption: "Clientes" }, { caption: "Fornecedores" }, { caption: "Transportadores" }, { caption: "Vendedores" }]
-	}, { caption: "Vendas" }, { caption: "Compras" }];
+	var renderApp = function renderApp() {
+	    (0, _reactDom.render)(_react2.default.createElement(MainPage, null), document.getElementById("app"));
+	};
 	
-	(0, _reactDom.render)(_react2.default.createElement(_MainMenu2.default, { options: menuItems }), document.getElementById("appMenu"));
-	(0, _reactDom.render)(_react2.default.createElement(App, null), document.getElementById("app"));
+	_main2.default.subscribe(renderApp);
+	renderApp();
 
 /***/ },
 /* 1 */
@@ -20155,46 +20175,7 @@
 
 
 /***/ },
-/* 159 */
-/*!*****************************************!*\
-  !*** ./src/client/app/participantes.js ***!
-  \*****************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	__webpack_require__(/*! whatwg-fetch */ 160);
-	
-	var _restful = __webpack_require__(/*! restful.js */ 161);
-	
-	var _restful2 = _interopRequireDefault(_restful);
-	
-	var _params = __webpack_require__(/*! ./core/params.js */ 178);
-	
-	var _params2 = _interopRequireDefault(_params);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var api = (0, _restful2.default)(_params2.default.api.baseUrl, (0, _restful.fetchBackend)(fetch));
-	var participantes = api.all("nfe_participantes");
-	
-	var particpantesFetch = function particpantesFetch() {
-	    participantes.get("").then(function (response) {
-	        var participantesCollection = response.body();
-	        console.log(participantesCollection.data());
-	    }, function (response) {
-	        console.log(response);
-	        console.log("ERRO");
-	    });
-	};
-	
-	exports.default = particpantesFetch;
-
-/***/ },
+/* 159 */,
 /* 160 */
 /*!*********************************!*\
   !*** ./~/whatwg-fetch/fetch.js ***!
@@ -26863,6 +26844,8 @@
 
 	"use strict";
 	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
@@ -26879,10 +26862,12 @@
 	    displayName: "MainMenu",
 	    render: function render() {
 	
+	        var props = this.props;
+	
 	        var topos = function topos(options) {
 	            return options.map(function (option, key) {
 	                if (option.options && option.options.length) {
-	                    return _react2.default.createElement(DropdownMenu, { key: key, option: option });
+	                    return _react2.default.createElement(DropdownMenu, _extends({}, props, { key: key, option: option }));
 	                }
 	                return _react2.default.createElement(
 	                    _reactBootstrap.Button,
@@ -26895,7 +26880,7 @@
 	        return _react2.default.createElement(
 	            _reactBootstrap.ButtonGroup,
 	            null,
-	            topos(this.props.options)
+	            topos(props.options)
 	        );
 	    }
 	});
@@ -26904,11 +26889,17 @@
 	    displayName: "DropdownMenu",
 	    render: function render() {
 	
+	        var props = this.props;
+	
 	        var menuItems = function menuItems(options, menuKey) {
 	            return options.map(function (option, key) {
+	                if (option.divider) {
+	                    return _react2.default.createElement(_reactBootstrap.MenuItem, { key: "top-menu-{menuKey}." + key, divider: true });
+	                }
 	                return _react2.default.createElement(
 	                    _reactBootstrap.MenuItem,
-	                    { key: "top-menu-{menuKey}." + key, eventKey: key },
+	                    { key: "top-menu-{menuKey}." + key, eventKey: key, active: option.active,
+	                        onClick: props.onClick.bind(null, option) },
 	                    option.caption
 	                );
 	            });
@@ -26916,9 +26907,9 @@
 	
 	        return _react2.default.createElement(
 	            _reactBootstrap.DropdownButton,
-	            { key: "top-menu-" + this.props.key, id: "dropdown-basic-" + this.props.key, bsStyle: "default",
-	                title: this.props.option.caption },
-	            menuItems(this.props.option.options, this.props.key)
+	            { key: "top-menu-" + this.props.key, id: "dropdown-basic-" + props.key, bsStyle: "default",
+	                title: props.option.caption },
+	            menuItems(props.option.options, props.key)
 	        );
 	    }
 	});
@@ -44634,6 +44625,879 @@
 	
 	exports['default'] = Well;
 	module.exports = exports['default'];
+
+/***/ },
+/* 424 */
+/*!**************************************************!*\
+  !*** ./src/client/app/widgets/PageContainer.jsx ***!
+  \**************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var PageContainer = _react2.default.createClass({
+	    displayName: "PageContainer",
+	    render: function render() {
+	        return _react2.default.createElement(
+	            "div",
+	            { className: "container-fluid" },
+	            _react2.default.createElement(
+	                "div",
+	                { className: "page-header" },
+	                _react2.default.createElement(
+	                    "h1",
+	                    null,
+	                    this.props.title,
+	                    " ",
+	                    _react2.default.createElement(
+	                        "small",
+	                        null,
+	                        this.props.subtitle
+	                    )
+	                ),
+	                this.props.menu
+	            ),
+	            _react2.default.createElement(
+	                "div",
+	                { className: "row" },
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "col-md-12" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "panel panel-default" },
+	                        _react2.default.createElement(
+	                            "div",
+	                            { className: "panel-body" },
+	                            this.props.module
+	                        )
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+	
+	exports.default = PageContainer;
+
+/***/ },
+/* 425 */
+/*!*******************************************!*\
+  !*** ./src/client/app/data-store/main.js ***!
+  \*******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _redux = __webpack_require__(/*! redux */ 426);
+	
+	var _main_menu = __webpack_require__(/*! ./main_menu.js */ 435);
+	
+	var _main_menu2 = _interopRequireDefault(_main_menu);
+	
+	var _main_menu_rest = __webpack_require__(/*! ./main_menu_rest.js */ 436);
+	
+	var _main_menu_rest2 = _interopRequireDefault(_main_menu_rest);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var defaultState = {
+	    menus: (0, _main_menu2.default)(undefined, {})
+	};
+	
+	var appReducers = {
+	
+	    "MENU_CLICK": function MENU_CLICK(state, action) {
+	        return Object.assign({}, state, {
+	            menus: (0, _main_menu2.default)(state.menus, action)
+	        });
+	    },
+	
+	    "MENU_SET": function MENU_SET(state, action) {
+	        console.log(action);
+	        return Object.assign({}, state, { menus: Object.assign({}, state.menus, { options: action.options }) });
+	    }
+	
+	};
+	
+	var main = function main() {
+	    var state = arguments.length <= 0 || arguments[0] === undefined ? defaultState : arguments[0];
+	    var action = arguments[1];
+	
+	    if (appReducers[action.type]) {
+	        return appReducers[action.type](state, action);
+	    }
+	    return state;
+	};
+	
+	var dataStore = (0, _redux.createStore)(main);
+	(0, _main_menu_rest2.default)(function (options) {
+	    return dataStore.dispatch({ type: "MENU_SET", options: options });
+	});
+	exports.default = dataStore;
+
+/***/ },
+/* 426 */
+/*!******************************!*\
+  !*** ./~/redux/lib/index.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+	
+	exports.__esModule = true;
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _createStore = __webpack_require__(/*! ./createStore */ 427);
+	
+	var _createStore2 = _interopRequireDefault(_createStore);
+	
+	var _combineReducers = __webpack_require__(/*! ./combineReducers */ 429);
+	
+	var _combineReducers2 = _interopRequireDefault(_combineReducers);
+	
+	var _bindActionCreators = __webpack_require__(/*! ./bindActionCreators */ 432);
+	
+	var _bindActionCreators2 = _interopRequireDefault(_bindActionCreators);
+	
+	var _applyMiddleware = __webpack_require__(/*! ./applyMiddleware */ 433);
+	
+	var _applyMiddleware2 = _interopRequireDefault(_applyMiddleware);
+	
+	var _compose = __webpack_require__(/*! ./compose */ 434);
+	
+	var _compose2 = _interopRequireDefault(_compose);
+	
+	/*
+	* This is a dummy function to check if the function name has been altered by minification.
+	* If the function has been minified and NODE_ENV !== 'production', warn the user.
+	*/
+	function isCrushed() {}
+	
+	if (isCrushed.name !== 'isCrushed' && process.env.NODE_ENV !== 'production') {
+	  /*eslint-disable no-console */
+	  console.error('You are currently using minified code outside of NODE_ENV === \'production\'. ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' + 'to ensure you have the correct code for your production build.');
+	  /*eslint-enable */
+	}
+	
+	exports.createStore = _createStore2['default'];
+	exports.combineReducers = _combineReducers2['default'];
+	exports.bindActionCreators = _bindActionCreators2['default'];
+	exports.applyMiddleware = _applyMiddleware2['default'];
+	exports.compose = _compose2['default'];
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 4)))
+
+/***/ },
+/* 427 */
+/*!************************************!*\
+  !*** ./~/redux/lib/createStore.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	exports.__esModule = true;
+	exports['default'] = createStore;
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _utilsIsPlainObject = __webpack_require__(/*! ./utils/isPlainObject */ 428);
+	
+	var _utilsIsPlainObject2 = _interopRequireDefault(_utilsIsPlainObject);
+	
+	/**
+	 * These are private action types reserved by Redux.
+	 * For any unknown actions, you must return the current state.
+	 * If the current state is undefined, you must return the initial state.
+	 * Do not reference these action types directly in your code.
+	 */
+	var ActionTypes = {
+	  INIT: '@@redux/INIT'
+	};
+	
+	exports.ActionTypes = ActionTypes;
+	/**
+	 * Creates a Redux store that holds the state tree.
+	 * The only way to change the data in the store is to call `dispatch()` on it.
+	 *
+	 * There should only be a single store in your app. To specify how different
+	 * parts of the state tree respond to actions, you may combine several reducers
+	 * into a single reducer function by using `combineReducers`.
+	 *
+	 * @param {Function} reducer A function that returns the next state tree, given
+	 * the current state tree and the action to handle.
+	 *
+	 * @param {any} [initialState] The initial state. You may optionally specify it
+	 * to hydrate the state from the server in universal apps, or to restore a
+	 * previously serialized user session.
+	 * If you use `combineReducers` to produce the root reducer function, this must be
+	 * an object with the same shape as `combineReducers` keys.
+	 *
+	 * @returns {Store} A Redux store that lets you read the state, dispatch actions
+	 * and subscribe to changes.
+	 */
+	
+	function createStore(reducer, initialState) {
+	  if (typeof reducer !== 'function') {
+	    throw new Error('Expected the reducer to be a function.');
+	  }
+	
+	  var currentReducer = reducer;
+	  var currentState = initialState;
+	  var listeners = [];
+	  var isDispatching = false;
+	
+	  /**
+	   * Reads the state tree managed by the store.
+	   *
+	   * @returns {any} The current state tree of your application.
+	   */
+	  function getState() {
+	    return currentState;
+	  }
+	
+	  /**
+	   * Adds a change listener. It will be called any time an action is dispatched,
+	   * and some part of the state tree may potentially have changed. You may then
+	   * call `getState()` to read the current state tree inside the callback.
+	   *
+	   * @param {Function} listener A callback to be invoked on every dispatch.
+	   * @returns {Function} A function to remove this change listener.
+	   */
+	  function subscribe(listener) {
+	    listeners.push(listener);
+	    var isSubscribed = true;
+	
+	    return function unsubscribe() {
+	      if (!isSubscribed) {
+	        return;
+	      }
+	
+	      isSubscribed = false;
+	      var index = listeners.indexOf(listener);
+	      listeners.splice(index, 1);
+	    };
+	  }
+	
+	  /**
+	   * Dispatches an action. It is the only way to trigger a state change.
+	   *
+	   * The `reducer` function, used to create the store, will be called with the
+	   * current state tree and the given `action`. Its return value will
+	   * be considered the **next** state of the tree, and the change listeners
+	   * will be notified.
+	   *
+	   * The base implementation only supports plain object actions. If you want to
+	   * dispatch a Promise, an Observable, a thunk, or something else, you need to
+	   * wrap your store creating function into the corresponding middleware. For
+	   * example, see the documentation for the `redux-thunk` package. Even the
+	   * middleware will eventually dispatch plain object actions using this method.
+	   *
+	   * @param {Object} action A plain object representing “what changed”. It is
+	   * a good idea to keep actions serializable so you can record and replay user
+	   * sessions, or use the time travelling `redux-devtools`. An action must have
+	   * a `type` property which may not be `undefined`. It is a good idea to use
+	   * string constants for action types.
+	   *
+	   * @returns {Object} For convenience, the same action object you dispatched.
+	   *
+	   * Note that, if you use a custom middleware, it may wrap `dispatch()` to
+	   * return something else (for example, a Promise you can await).
+	   */
+	  function dispatch(action) {
+	    if (!_utilsIsPlainObject2['default'](action)) {
+	      throw new Error('Actions must be plain objects. ' + 'Use custom middleware for async actions.');
+	    }
+	
+	    if (typeof action.type === 'undefined') {
+	      throw new Error('Actions may not have an undefined "type" property. ' + 'Have you misspelled a constant?');
+	    }
+	
+	    if (isDispatching) {
+	      throw new Error('Reducers may not dispatch actions.');
+	    }
+	
+	    try {
+	      isDispatching = true;
+	      currentState = currentReducer(currentState, action);
+	    } finally {
+	      isDispatching = false;
+	    }
+	
+	    listeners.slice().forEach(function (listener) {
+	      return listener();
+	    });
+	    return action;
+	  }
+	
+	  /**
+	   * Replaces the reducer currently used by the store to calculate the state.
+	   *
+	   * You might need this if your app implements code splitting and you want to
+	   * load some of the reducers dynamically. You might also need this if you
+	   * implement a hot reloading mechanism for Redux.
+	   *
+	   * @param {Function} nextReducer The reducer for the store to use instead.
+	   * @returns {void}
+	   */
+	  function replaceReducer(nextReducer) {
+	    currentReducer = nextReducer;
+	    dispatch({ type: ActionTypes.INIT });
+	  }
+	
+	  // When a store is created, an "INIT" action is dispatched so that every
+	  // reducer returns their initial state. This effectively populates
+	  // the initial state tree.
+	  dispatch({ type: ActionTypes.INIT });
+	
+	  return {
+	    dispatch: dispatch,
+	    subscribe: subscribe,
+	    getState: getState,
+	    replaceReducer: replaceReducer
+	  };
+	}
+
+/***/ },
+/* 428 */
+/*!********************************************!*\
+  !*** ./~/redux/lib/utils/isPlainObject.js ***!
+  \********************************************/
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	exports.__esModule = true;
+	exports['default'] = isPlainObject;
+	var fnToString = function fnToString(fn) {
+	  return Function.prototype.toString.call(fn);
+	};
+	var objStringValue = fnToString(Object);
+	
+	/**
+	 * @param {any} obj The object to inspect.
+	 * @returns {boolean} True if the argument appears to be a plain object.
+	 */
+	
+	function isPlainObject(obj) {
+	  if (!obj || typeof obj !== 'object') {
+	    return false;
+	  }
+	
+	  var proto = typeof obj.constructor === 'function' ? Object.getPrototypeOf(obj) : Object.prototype;
+	
+	  if (proto === null) {
+	    return true;
+	  }
+	
+	  var constructor = proto.constructor;
+	
+	  return typeof constructor === 'function' && constructor instanceof constructor && fnToString(constructor) === objStringValue;
+	}
+	
+	module.exports = exports['default'];
+
+/***/ },
+/* 429 */
+/*!****************************************!*\
+  !*** ./~/redux/lib/combineReducers.js ***!
+  \****************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+	
+	exports.__esModule = true;
+	exports['default'] = combineReducers;
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _createStore = __webpack_require__(/*! ./createStore */ 427);
+	
+	var _utilsIsPlainObject = __webpack_require__(/*! ./utils/isPlainObject */ 428);
+	
+	var _utilsIsPlainObject2 = _interopRequireDefault(_utilsIsPlainObject);
+	
+	var _utilsMapValues = __webpack_require__(/*! ./utils/mapValues */ 430);
+	
+	var _utilsMapValues2 = _interopRequireDefault(_utilsMapValues);
+	
+	var _utilsPick = __webpack_require__(/*! ./utils/pick */ 431);
+	
+	var _utilsPick2 = _interopRequireDefault(_utilsPick);
+	
+	/* eslint-disable no-console */
+	
+	function getUndefinedStateErrorMessage(key, action) {
+	  var actionType = action && action.type;
+	  var actionName = actionType && '"' + actionType.toString() + '"' || 'an action';
+	
+	  return 'Reducer "' + key + '" returned undefined handling ' + actionName + '. ' + 'To ignore an action, you must explicitly return the previous state.';
+	}
+	
+	function getUnexpectedStateShapeWarningMessage(inputState, reducers, action) {
+	  var reducerKeys = Object.keys(reducers);
+	  var argumentName = action && action.type === _createStore.ActionTypes.INIT ? 'initialState argument passed to createStore' : 'previous state received by the reducer';
+	
+	  if (reducerKeys.length === 0) {
+	    return 'Store does not have a valid reducer. Make sure the argument passed ' + 'to combineReducers is an object whose values are reducers.';
+	  }
+	
+	  if (!_utilsIsPlainObject2['default'](inputState)) {
+	    return 'The ' + argumentName + ' has unexpected type of "' + ({}).toString.call(inputState).match(/\s([a-z|A-Z]+)/)[1] + '". Expected argument to be an object with the following ' + ('keys: "' + reducerKeys.join('", "') + '"');
+	  }
+	
+	  var unexpectedKeys = Object.keys(inputState).filter(function (key) {
+	    return !reducers.hasOwnProperty(key);
+	  });
+	
+	  if (unexpectedKeys.length > 0) {
+	    return 'Unexpected ' + (unexpectedKeys.length > 1 ? 'keys' : 'key') + ' ' + ('"' + unexpectedKeys.join('", "') + '" found in ' + argumentName + '. ') + 'Expected to find one of the known reducer keys instead: ' + ('"' + reducerKeys.join('", "') + '". Unexpected keys will be ignored.');
+	  }
+	}
+	
+	function assertReducerSanity(reducers) {
+	  Object.keys(reducers).forEach(function (key) {
+	    var reducer = reducers[key];
+	    var initialState = reducer(undefined, { type: _createStore.ActionTypes.INIT });
+	
+	    if (typeof initialState === 'undefined') {
+	      throw new Error('Reducer "' + key + '" returned undefined during initialization. ' + 'If the state passed to the reducer is undefined, you must ' + 'explicitly return the initial state. The initial state may ' + 'not be undefined.');
+	    }
+	
+	    var type = '@@redux/PROBE_UNKNOWN_ACTION_' + Math.random().toString(36).substring(7).split('').join('.');
+	    if (typeof reducer(undefined, { type: type }) === 'undefined') {
+	      throw new Error('Reducer "' + key + '" returned undefined when probed with a random type. ' + ('Don\'t try to handle ' + _createStore.ActionTypes.INIT + ' or other actions in "redux/*" ') + 'namespace. They are considered private. Instead, you must return the ' + 'current state for any unknown actions, unless it is undefined, ' + 'in which case you must return the initial state, regardless of the ' + 'action type. The initial state may not be undefined.');
+	    }
+	  });
+	}
+	
+	/**
+	 * Turns an object whose values are different reducer functions, into a single
+	 * reducer function. It will call every child reducer, and gather their results
+	 * into a single state object, whose keys correspond to the keys of the passed
+	 * reducer functions.
+	 *
+	 * @param {Object} reducers An object whose values correspond to different
+	 * reducer functions that need to be combined into one. One handy way to obtain
+	 * it is to use ES6 `import * as reducers` syntax. The reducers may never return
+	 * undefined for any action. Instead, they should return their initial state
+	 * if the state passed to them was undefined, and the current state for any
+	 * unrecognized action.
+	 *
+	 * @returns {Function} A reducer function that invokes every reducer inside the
+	 * passed object, and builds a state object with the same shape.
+	 */
+	
+	function combineReducers(reducers) {
+	  var finalReducers = _utilsPick2['default'](reducers, function (val) {
+	    return typeof val === 'function';
+	  });
+	  var sanityError;
+	
+	  try {
+	    assertReducerSanity(finalReducers);
+	  } catch (e) {
+	    sanityError = e;
+	  }
+	
+	  return function combination(state, action) {
+	    if (state === undefined) state = {};
+	
+	    if (sanityError) {
+	      throw sanityError;
+	    }
+	
+	    if (process.env.NODE_ENV !== 'production') {
+	      var warningMessage = getUnexpectedStateShapeWarningMessage(state, finalReducers, action);
+	      if (warningMessage) {
+	        console.error(warningMessage);
+	      }
+	    }
+	
+	    var hasChanged = false;
+	    var finalState = _utilsMapValues2['default'](finalReducers, function (reducer, key) {
+	      var previousStateForKey = state[key];
+	      var nextStateForKey = reducer(previousStateForKey, action);
+	      if (typeof nextStateForKey === 'undefined') {
+	        var errorMessage = getUndefinedStateErrorMessage(key, action);
+	        throw new Error(errorMessage);
+	      }
+	      hasChanged = hasChanged || nextStateForKey !== previousStateForKey;
+	      return nextStateForKey;
+	    });
+	
+	    return hasChanged ? finalState : state;
+	  };
+	}
+	
+	module.exports = exports['default'];
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 4)))
+
+/***/ },
+/* 430 */
+/*!****************************************!*\
+  !*** ./~/redux/lib/utils/mapValues.js ***!
+  \****************************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Applies a function to every key-value pair inside an object.
+	 *
+	 * @param {Object} obj The source object.
+	 * @param {Function} fn The mapper function that receives the value and the key.
+	 * @returns {Object} A new object that contains the mapped values for the keys.
+	 */
+	"use strict";
+	
+	exports.__esModule = true;
+	exports["default"] = mapValues;
+	
+	function mapValues(obj, fn) {
+	  return Object.keys(obj).reduce(function (result, key) {
+	    result[key] = fn(obj[key], key);
+	    return result;
+	  }, {});
+	}
+	
+	module.exports = exports["default"];
+
+/***/ },
+/* 431 */
+/*!***********************************!*\
+  !*** ./~/redux/lib/utils/pick.js ***!
+  \***********************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Picks key-value pairs from an object where values satisfy a predicate.
+	 *
+	 * @param {Object} obj The object to pick from.
+	 * @param {Function} fn The predicate the values must satisfy to be copied.
+	 * @returns {Object} The object with the values that satisfied the predicate.
+	 */
+	"use strict";
+	
+	exports.__esModule = true;
+	exports["default"] = pick;
+	
+	function pick(obj, fn) {
+	  return Object.keys(obj).reduce(function (result, key) {
+	    if (fn(obj[key])) {
+	      result[key] = obj[key];
+	    }
+	    return result;
+	  }, {});
+	}
+	
+	module.exports = exports["default"];
+
+/***/ },
+/* 432 */
+/*!*******************************************!*\
+  !*** ./~/redux/lib/bindActionCreators.js ***!
+  \*******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	exports.__esModule = true;
+	exports['default'] = bindActionCreators;
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _utilsMapValues = __webpack_require__(/*! ./utils/mapValues */ 430);
+	
+	var _utilsMapValues2 = _interopRequireDefault(_utilsMapValues);
+	
+	function bindActionCreator(actionCreator, dispatch) {
+	  return function () {
+	    return dispatch(actionCreator.apply(undefined, arguments));
+	  };
+	}
+	
+	/**
+	 * Turns an object whose values are action creators, into an object with the
+	 * same keys, but with every function wrapped into a `dispatch` call so they
+	 * may be invoked directly. This is just a convenience method, as you can call
+	 * `store.dispatch(MyActionCreators.doSomething())` yourself just fine.
+	 *
+	 * For convenience, you can also pass a single function as the first argument,
+	 * and get a function in return.
+	 *
+	 * @param {Function|Object} actionCreators An object whose values are action
+	 * creator functions. One handy way to obtain it is to use ES6 `import * as`
+	 * syntax. You may also pass a single function.
+	 *
+	 * @param {Function} dispatch The `dispatch` function available on your Redux
+	 * store.
+	 *
+	 * @returns {Function|Object} The object mimicking the original object, but with
+	 * every action creator wrapped into the `dispatch` call. If you passed a
+	 * function as `actionCreators`, the return value will also be a single
+	 * function.
+	 */
+	
+	function bindActionCreators(actionCreators, dispatch) {
+	  if (typeof actionCreators === 'function') {
+	    return bindActionCreator(actionCreators, dispatch);
+	  }
+	
+	  if (typeof actionCreators !== 'object' || actionCreators === null || actionCreators === undefined) {
+	    throw new Error('bindActionCreators expected an object or a function, instead received ' + (actionCreators === null ? 'null' : typeof actionCreators) + '. ' + 'Did you write "import ActionCreators from" instead of "import * as ActionCreators from"?');
+	  }
+	
+	  return _utilsMapValues2['default'](actionCreators, function (actionCreator) {
+	    return bindActionCreator(actionCreator, dispatch);
+	  });
+	}
+	
+	module.exports = exports['default'];
+
+/***/ },
+/* 433 */
+/*!****************************************!*\
+  !*** ./~/redux/lib/applyMiddleware.js ***!
+  \****************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	exports.__esModule = true;
+	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
+	exports['default'] = applyMiddleware;
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _compose = __webpack_require__(/*! ./compose */ 434);
+	
+	var _compose2 = _interopRequireDefault(_compose);
+	
+	/**
+	 * Creates a store enhancer that applies middleware to the dispatch method
+	 * of the Redux store. This is handy for a variety of tasks, such as expressing
+	 * asynchronous actions in a concise manner, or logging every action payload.
+	 *
+	 * See `redux-thunk` package as an example of the Redux middleware.
+	 *
+	 * Because middleware is potentially asynchronous, this should be the first
+	 * store enhancer in the composition chain.
+	 *
+	 * Note that each middleware will be given the `dispatch` and `getState` functions
+	 * as named arguments.
+	 *
+	 * @param {...Function} middlewares The middleware chain to be applied.
+	 * @returns {Function} A store enhancer applying the middleware.
+	 */
+	
+	function applyMiddleware() {
+	  for (var _len = arguments.length, middlewares = Array(_len), _key = 0; _key < _len; _key++) {
+	    middlewares[_key] = arguments[_key];
+	  }
+	
+	  return function (next) {
+	    return function (reducer, initialState) {
+	      var store = next(reducer, initialState);
+	      var _dispatch = store.dispatch;
+	      var chain = [];
+	
+	      var middlewareAPI = {
+	        getState: store.getState,
+	        dispatch: function dispatch(action) {
+	          return _dispatch(action);
+	        }
+	      };
+	      chain = middlewares.map(function (middleware) {
+	        return middleware(middlewareAPI);
+	      });
+	      _dispatch = _compose2['default'].apply(undefined, chain)(store.dispatch);
+	
+	      return _extends({}, store, {
+	        dispatch: _dispatch
+	      });
+	    };
+	  };
+	}
+	
+	module.exports = exports['default'];
+
+/***/ },
+/* 434 */
+/*!********************************!*\
+  !*** ./~/redux/lib/compose.js ***!
+  \********************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Composes single-argument functions from right to left.
+	 *
+	 * @param {...Function} funcs The functions to compose.
+	 * @returns {Function} A function obtained by composing functions from right to
+	 * left. For example, compose(f, g, h) is identical to arg => f(g(h(arg))).
+	 */
+	"use strict";
+	
+	exports.__esModule = true;
+	exports["default"] = compose;
+	
+	function compose() {
+	  for (var _len = arguments.length, funcs = Array(_len), _key = 0; _key < _len; _key++) {
+	    funcs[_key] = arguments[_key];
+	  }
+	
+	  return function () {
+	    if (funcs.length === 0) {
+	      return arguments[0];
+	    }
+	
+	    var last = funcs[funcs.length - 1];
+	    var rest = funcs.slice(0, -1);
+	
+	    return rest.reduceRight(function (composed, f) {
+	      return f(composed);
+	    }, last.apply(undefined, arguments));
+	  };
+	}
+	
+	module.exports = exports["default"];
+
+/***/ },
+/* 435 */
+/*!************************************************!*\
+  !*** ./src/client/app/data-store/main_menu.js ***!
+  \************************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var defaultState = {
+	
+	    onClick: function onClick(button, dataStore) {
+	        dataStore.dispatch({ type: "MENU_CLICK", selectedOption: button });
+	    },
+	
+	    options: []
+	
+	};
+	
+	var setActive = function setActive(menuItem, active) {
+	    if (menuItem.active === active) {
+	        return menuItem;
+	    }
+	    return Object.assign({}, menuItem, { active: active });
+	};
+	
+	var menuSelect = function menuSelect(options, selectedOption) {
+	    return options.map(function (option) {
+	        if (option.options && option.options.length) {
+	            return Object.assign({}, option, { options: menuSelect(option.options, selectedOption) });
+	        }
+	        return setActive(option, option === selectedOption);
+	    });
+	};
+	
+	exports.default = function () {
+	    var state = arguments.length <= 0 || arguments[0] === undefined ? defaultState : arguments[0];
+	    var action = arguments[1];
+	
+	    if ("MENU_CLICK" === action.type) {
+	        return Object.assign({}, state, { options: menuSelect(state.options, action.selectedOption) });
+	    }
+	    return state;
+	};
+
+/***/ },
+/* 436 */
+/*!*****************************************************!*\
+  !*** ./src/client/app/data-store/main_menu_rest.js ***!
+  \*****************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	__webpack_require__(/*! whatwg-fetch */ 160);
+	
+	var _restful = __webpack_require__(/*! restful.js */ 161);
+	
+	var _restful2 = _interopRequireDefault(_restful);
+	
+	var _params = __webpack_require__(/*! ../core/params.js */ 178);
+	
+	var _params2 = _interopRequireDefault(_params);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
+	var api = (0, _restful2.default)(_params2.default.api.baseUrl, (0, _restful.fetchBackend)(fetch));
+	var menus = api.custom("acs_menus/?where=nivel<2&orderby=coluna,ordemgeral");
+	
+	var menuOptions = function menuOptions(menusData, nivel, indiceInicial) {
+	    var length = menusData.length;
+	    var nivelConcluido = false;
+	
+	    return menusData.reduce(function (result, item, indice) {
+	
+	        if (indice >= indiceInicial && item.nivel < nivel) {
+	            nivelConcluido = true;
+	        }
+	
+	        if (nivelConcluido || item.nivel != nivel || indice < indiceInicial || item.nive > 0 && "P" === item.acaotipo) {
+	            return result;
+	        }
+	
+	        if (indice < length - 1 && menusData[indice + 1].nivel > nivel) {
+	            return [].concat(_toConsumableArray(result), [{
+	                active: false,
+	                caption: item.caption,
+	                options: menuOptions(menusData, menusData[indice + 1].nivel, indice + 1)
+	            }]);
+	        }
+	
+	        return [].concat(_toConsumableArray(result), [{
+	            active: false,
+	            caption: item.caption,
+	            divider: "S" === item.acaotipo
+	        }]);
+	    }, []);
+	};
+	
+	var menusFetch = function menusFetch(callback) {
+	    menus.get("").then(function (response) {
+	        var menusEntity = response.body();
+	        if (callback) {
+	            callback(menuOptions(menusEntity.data().result, "0", 0));
+	        }
+	    }, function (response) {
+	        console.log(response);
+	        console.log("ERRO");
+	    });
+	};
+	
+	exports.default = menusFetch;
 
 /***/ }
 /******/ ]);
